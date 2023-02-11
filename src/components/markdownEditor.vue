@@ -24,6 +24,7 @@ const output = computed<String>(() => marked(input.value));
   box-sizing: border-box;
   font-family: "Monaco", courier, monospace;
 }
+
 .container {
   width: 80vw;
   height: 60vh;
@@ -61,6 +62,25 @@ const output = computed<String>(() => marked(input.value));
     padding: 10px;
     border-radius: 5px;
     background-color: rgba(128, 128, 128, 0.298);
+  }
+}
+
+@media (max-width: 390px) {
+  .container {
+    flex-wrap: wrap;
+    flex-direction: column-reverse;
+    .input,
+    .output {
+      width: 100%;
+      height: 50%;
+    }
+    .input {
+      height: calc(50% - 5px);
+      margin-top: 5px;
+    }
+    .output {
+      width: 100%;
+    }
   }
 }
 </style>
