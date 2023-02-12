@@ -1,9 +1,9 @@
 <script setup>
-import markdownEditor from "./components/markdownEditor.vue";
+import component from "./components/BranchDisplayBar.vue";
 </script>
 
 <template>
-  <markdownEditor></markdownEditor>
+  <component></component>
 </template>
 
 <style></style>
