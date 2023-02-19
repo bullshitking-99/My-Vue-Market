@@ -1,5 +1,5 @@
 <script setup>
-import component from "./components/BranchDisplayBar.vue";
+import component from "./components/imgViewer.vue";
 </script>
 
 <template>
