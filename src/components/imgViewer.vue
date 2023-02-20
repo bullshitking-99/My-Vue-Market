@@ -3,16 +3,12 @@ import { nextTick, onMounted, ref, watch } from "vue";
 
 // 控制 modal
 const isShow = ref(false);
-
 //  原图片实例
 let curImg: HTMLImageElement;
-
 // 现图片实例
 let modalImg: HTMLImageElement;
-
 // modal实例
 let modal: HTMLElement;
-
 // modal-img所需src
 const imgSrc = ref("");
 
@@ -23,8 +19,8 @@ interface IRects {
   top: number;
   width: number;
 }
-let curRects: IRects;
-let prevRects: IRects;
+let curRects: IRects; // 原图
+let prevRects: IRects; // 预览图
 let scaleVal: number;
 
 // First & Last 获取图片大小和位置
@@ -41,7 +37,6 @@ function invertPlay(imgDom: HTMLImageElement, control: "show" | "close") {
   const invert = {
     left: curRects.left - prevRects.left,
     top: curRects.top - prevRects.top,
-    scaleVal,
   };
 
   let keyframes = [
@@ -73,7 +68,7 @@ function invertPlay(imgDom: HTMLImageElement, control: "show" | "close") {
       imgSrc.value = "";
 
       // put origin-img back
-      curImg.style.opacity = "1";
+      curImg.style.visibility = "visible";
 
       // 取消副作用
       curImg.style.transition = "";
@@ -82,52 +77,78 @@ function invertPlay(imgDom: HTMLImageElement, control: "show" | "close") {
   }
 }
 
-// modal click handler
-function modalClose() {
-  // modal background-transparent
-  modal.style.backgroundColor = "transparent";
-  // invert play again
-  invertPlay(modalImg, "close");
-}
+// modal close handler - click & scroll
+// 在一次滚动行为中 只执行最后一次 并重新获取原图的位置
+// 进行防抖处理
+const modalClose = debounce(function () {
+  if (isShow.value) {
+    // 重新记录原图位置
+    curRects = getRects(curImg);
+
+    // modal background-transparent
+    modal.style.backgroundColor = "transparent";
+    // invert play again
+    invertPlay(modalImg, "close");
+  }
+}, 0);
+
+// 滚动响应 - 在modal打开时，监听滚动事件
+window.onscroll = modalClose;
 
 onMounted(() => {
-  // 原图片
+  // 获取页面图片dom集
   const imgs = Array.from(document.getElementsByTagName("img"));
+  // 每个图片的点击处理
+  const curImgClickHandler = function ({ target }) {
+    // 传递数据
+    curImg = target as HTMLImageElement;
+    // 触发 modal-img 的加载
+    imgSrc.value = curImg.src;
+    curRects = getRects(curImg);
+    // 打开modal
+    isShow.value = true;
+  };
+  // 为每个图片添加点击事件响应
   imgs.forEach((img: HTMLImageElement) => {
     // 预设样式
     img.style.cursor = "zoom-in";
-
     // 添加事件监听
-    img.addEventListener("click", async ({ target }) => {
-      // 传递数据
-      curImg = target as HTMLImageElement;
-      imgSrc.value = curImg.src;
-      curRects = getRects(curImg);
-      // 打开modal
-      isShow.value = true;
-    });
+    img.addEventListener("click", curImgClickHandler);
   });
 
   // 获取modal实例
   modal = document.getElementById("imgViewer-modal")!;
 
-  // 预览图片
+  // 预览图片dom
   modalImg = document.getElementById("imgViewer-modalImg") as HTMLImageElement;
-  // img 在获得src后才会加载，加载需要时间
+  // 在预览图片加载完成后开始动画
   modalImg.onload = () => {
     prevRects = getRects(modalImg);
     scaleVal = curRects.width / prevRects.width;
     // 执行flip
     invertPlay(modalImg, "show");
-    // 原图片消失 - 带来问题：modal-img 出现时空白闪烁 - 给原图片消失加transition
-    curImg.style.transition = "all ease .1s";
-    curImg.style.opacity = "0";
+    // 原图片消失
+    curImg.style.visibility = "hidden";
   };
 });
+
+// 防抖函数
+function debounce(func: Function, delay: number) {
+  // 记录上一次调度标识
+  let lastTimerId: number;
+
+  return function (...args: any[]) {
+    // 取消上一次调度，若调度已执行，clearTimeout无副作用
+    clearTimeout(lastTimerId);
+    lastTimerId = setTimeout(() => {
+      func.apply(this, args);
+    }, delay);
+  };
+}
 </script>
 
 <template>
-  <div id="imgViewer">
+  <div id="imgViewer" @scroll="modalClose">
     <div
       @click="modalClose"
       id="imgViewer-modal"
@@ -136,10 +157,8 @@ onMounted(() => {
     >
       <img id="imgViewer-modalImg" :src="imgSrc" />
     </div>
-    <div class="container">
-      <img src="../assets/girl.png" />
-      <h1 v-for="item in 10">up</h1>
-    </div>
+
+    <slot></slot>
   </div>
 </template>
 
@@ -171,19 +190,6 @@ onMounted(() => {
     &.modalClose {
       visibility: hidden;
     }
-  }
-}
-
-.container {
-  width: 100%;
-  height: 50vh;
-  margin: 25vh 0;
-
-  img {
-    display: block;
-    height: 100%;
-    margin: 0 auto;
-    object-fit: contain;
   }
 }
 </style>
