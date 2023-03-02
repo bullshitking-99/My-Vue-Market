@@ -5,7 +5,12 @@ import router from "./router";
 import hljs from "highlight.js";
 import "highlight.js/styles/a11y-light.css"; // 导入代码高亮样式
 
+// import { ImgViewer } from "vue3-img-viewer";
+// import "vue3-img-viewer/dist/style.css";
+
 const app = createApp(App);
+
+// app.use(ImgViewer);
 
 // highlight.js
 // 注册一个全局指令

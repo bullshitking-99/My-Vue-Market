@@ -1,15 +1,16 @@
-<script setup>
-import component from "./components/imgViewer.vue";
+<script lang="ts" setup>
+// import ImgViewer from "./components/imgViewer.vue";
+import { ImgViewer } from "vue3-img-viewer";
 </script>
 
 <template>
-  <component>
+  <ImgViewer>
     <div class="container">
       <img src="./assets/girl.png" />
       <img src="./assets/logo.png" />
       <h1 v-for="item in 10">up</h1>
     </div>
-  </component>
+  </ImgViewer>
 </template>
 
 <style lang="scss">

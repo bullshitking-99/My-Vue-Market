@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script lang="ts" name="imgViewer" setup>
 import { nextTick, onMounted, ref, watch } from "vue";
 
 // 控制 modal
@@ -55,6 +55,7 @@ function invertPlay(imgDom: HTMLImageElement, control: "show" | "close") {
   const options = {
     duration: 300,
     easing: "cubic-bezier(0,0,0.32,1)",
+    // easing: "linear",
   };
 
   // gogogo
@@ -94,6 +95,7 @@ const modalClose = debounce(function () {
 
 // 滚动响应 - 在modal打开时，监听滚动事件
 window.onscroll = modalClose;
+// 也可自行使用inject监听滚动源
 
 onMounted(() => {
   // 获取页面图片dom集
@@ -148,7 +150,7 @@ function debounce(func: Function, delay: number) {
 </script>
 
 <template>
-  <div id="imgViewer" @scroll="modalClose">
+  <div id="imgViewer">
     <div
       @click="modalClose"
       id="imgViewer-modal"
