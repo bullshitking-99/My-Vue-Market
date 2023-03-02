@@ -1,22 +1,26 @@
 <script lang="ts" setup>
-import { last } from "lodash";
 import { ref } from "vue";
 
 // 数据
 interface Icard {
-  id: number;
   content: number;
-  control: "open" | "close" | "shake" | "disappear";
+  state: "open" | "close" | "shake" | "disappear";
+  color: "gray" | "smoke";
 }
 const cards = ref<Icard[]>([]);
 
 // 生成数据
-for (let i = 0; i < 16; i++) {
-  cards.value.push({ id: i + 1, content: i + 1, control: "close" });
+function createCards() {
+  for (let i = 0; i < 16; i++) {
+    cards.value.push({ content: i + 1, state: "close", color: "gray" });
+  }
+  for (let i = 8; i < 16; i++) {
+    cards.value[i].content = i - 7;
+    cards.value[i].color = "smoke";
+  }
+  shuffle(cards.value);
 }
-for (let i = 8; i < 16; i++) {
-  cards.value[i].content = i - 7;
-}
+createCards();
 
 // 控制数据
 // 第一次点击的卡牌
@@ -24,39 +28,56 @@ let lastCard: Icard | null;
 let restCard: number = cards.value.length;
 
 // 方法
-function shuffle(arr: Icard[]): Icard[] {
-  return [];
+// 洗牌：每次在未放置队列中随机抽一张，放到最后或上一张牌的前面
+function shuffle(arr: Icard[]): void {
+  let i: number; // 抽取队列的最后一张，也代表抽取队列的数量
+  let j: number; // 随机抽出的牌
+  for (i = arr.length; i > 0; i--) {
+    j = Math.floor(Math.random() * i);
+    // 交换 i j
+    const card_i = arr[i - 1];
+    const card_j = arr[j];
+
+    Object.keys(card_i).map((p) => {
+      [card_i[p], card_j[p]] = [card_j[p], card_i[p]];
+    });
+  }
 }
 
 function cardClickHandler(index: number): void {
   const card = cards.value[index];
-
   if (card === lastCard) return;
 
-  const control = card.control;
-  card.control = control === "close" ? "open" : "close";
+  const state = card.state;
+  card.state = state === "close" ? "open" : "close";
 
   // 开始判断
-  if (!lastCard) {
-    lastCard = card;
-  } else {
-    if (lastCard.content === card.content) {
-      lastCard.control = card.control = "disappear";
-      lastCard = null;
-      restCard = restCard - 2;
+  lastCard === null
+    ? (lastCard = card)
+    : lastCard.content === card.content
+    ? matchRight()
+    : matchError();
 
-      if (restCard === 0) {
-        setTimeout(() => alert("congratulation"), 500);
-      }
-    } else {
-      lastCard.control = card.control = "shake";
-      const _lastCard = lastCard;
-      lastCard = null;
+  function matchRight() {
+    (lastCard as Icard).state = card.state = "disappear";
+    lastCard = null;
+    restCard = restCard - 2;
+
+    if (restCard === 0) {
       setTimeout(() => {
-        (_lastCard as Icard).control = card.control = "close";
+        alert("congratulation");
+        cards.value.length = 0;
+        createCards();
       }, 500);
     }
-    // 清空
+  }
+  function matchError() {
+    (lastCard as Icard).state = card.state = "shake";
+    const _lastCard = lastCard;
+    lastCard = null;
+    setTimeout(() => {
+      (_lastCard as Icard).state = card.state = "close";
+    }, 500);
   }
 }
 </script>
@@ -66,9 +87,10 @@ function cardClickHandler(index: number): void {
     <div
       v-for="(card, index) in cards"
       :class="[
-        { close: card.control === 'close' },
-        { shake: card.control === 'shake' },
-        { disappear: card.control === 'disappear' },
+        { close: card.state === 'close' },
+        { shake: card.state === 'shake' },
+        { disappear: card.state === 'disappear' },
+        [card.color === 'smoke' ? 'smoke' : 'gray'],
       ]"
       @click="cardClickHandler(index)"
     >
@@ -103,12 +125,14 @@ main {
     transition: all ease 0.2s;
 
     user-select: none;
-    font-size: calc((60vw - 50px) / 10);
+    font-size: calc((60vw - 50px) / 12);
 
     &.close {
       color: transparent;
     }
     &.disappear {
+      transition: all ease 0.3s;
+      transform: scale(0);
       visibility: hidden;
     }
     &.shake {
@@ -147,6 +171,13 @@ main {
           transform: translateX(0);
         }
       }
+    }
+
+    &.smoke {
+      color: whitesmoke;
+    }
+    &.gray {
+      color: gray;
     }
   }
 }
