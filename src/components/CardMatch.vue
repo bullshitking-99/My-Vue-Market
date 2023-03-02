@@ -52,11 +52,18 @@ function cardClickHandler(index: number): void {
   card.state = state === "close" ? "open" : "close";
 
   // 开始判断
-  lastCard === null
-    ? (lastCard = card)
-    : lastCard.content === card.content
-    ? matchRight()
-    : matchError();
+  // lastCard === null
+  //   ? (lastCard = card)
+  //   : lastCard.content === card.content // 是null这一行还是会被执行
+  //   ? matchRight()
+  //   : matchError();
+
+  if (!lastCard) {
+    lastCard = card;
+    return;
+  }
+
+  lastCard && lastCard.content === card.content ? matchRight() : matchError();
 
   function matchRight() {
     (lastCard as Icard).state = card.state = "disappear";
