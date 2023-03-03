@@ -7,7 +7,12 @@ interface Icard {
   link: string;
   state: "left" | "mid" | "right" | "back";
 }
+interface Ipoint {
+  id: number;
+  state: boolean;
+}
 
+// 卡片
 const cards = ref<Icard[]>([
   {
     src: "src/assets/girl.png",
@@ -30,12 +35,12 @@ const cards = ref<Icard[]>([
     link: "https://www.kuaishou.com",
   },
 ]);
-// 方法
+const len = cards.value.length;
+
 // 点击卡片
 function clickHandler(index: number): void {
   // 点击的卡片
   const card = cards.value[index];
-  const len = cards.value.length;
 
   //   判断点击
 
@@ -87,7 +92,6 @@ function clickHandler(index: number): void {
 }
 
 // 自动轮播
-
 // 单次播放
 function play() {
   // 当前的right
@@ -99,7 +103,6 @@ function play() {
 }
 // 自动轮播
 let timeId = setInterval(play, 3000);
-
 // 鼠标hover时取消轮播
 // 声明一个 ref 来存放该元素的引用
 // 必须和模板里的 ref 同名
@@ -111,6 +114,56 @@ onMounted(() => {
   (container.value as HTMLDivElement).onmouseleave = () => {
     timeId = setInterval(play, 3000);
   };
+});
+
+// 导航的小点
+const points = ref<Ipoint[]>(
+  new Array(cards.value.length).fill(null).map(() => {
+    return { id: 0, state: false };
+  })
+);
+
+points.value.forEach((point, index) => {
+  point.id = index;
+  point.state = false;
+});
+
+// 鼠标移入 导航激活
+const pointRefs = ref<HTMLSpanElement[]>([]);
+
+onMounted(() => {
+  pointRefs.value.forEach((point) => {
+    point.onmouseenter = () => {
+      points.value[point.id].state = true;
+      const pointIndex = Number(point.id);
+
+      // 滚动卡片 - 重新设置所有卡片状态
+      cards.value.forEach((card, index) => {
+        switch (index) {
+          case pointIndex:
+            card.state = "mid";
+            break;
+
+          case pointIndex + 1:
+          case (pointIndex + 1) % len:
+            card.state = "right";
+            break;
+
+          case pointIndex - 1:
+          case len + (pointIndex - 1):
+            card.state = "left";
+            break;
+
+          default:
+            card.state = "back";
+            break;
+        }
+      });
+    };
+    point.onmouseleave = () => {
+      points.value[point.id].state = false;
+    };
+  });
 });
 </script>
 
@@ -128,12 +181,23 @@ onMounted(() => {
         { back: card.state === 'back' },
       ]"
     />
+    <div class="pointBar">
+      <span
+        ref="pointRefs"
+        :id="String(point.id)"
+        v-for="point in points"
+        class="point"
+        :class="{ pointChoosen: point.state }"
+      ></span>
+    </div>
   </div>
 </template>
 
 <style scoped lang="scss">
 .container {
+  max-width: 800px;
   width: 90vw;
+  min-height: 300px;
   height: 30vh;
   margin: 20vh auto;
   position: relative;
@@ -159,6 +223,7 @@ onMounted(() => {
       position: absolute;
       left: 7%;
       transition: all ease 0.2s;
+      pointer-events: none;
     }
     &::after {
       box-sizing: border-box;
@@ -176,6 +241,7 @@ onMounted(() => {
       position: absolute;
       right: 7%;
       transition: all ease 0.2s;
+      pointer-events: none;
     }
   }
 
@@ -186,6 +252,7 @@ onMounted(() => {
     border-radius: 10px;
     object-fit: cover;
     overflow: hidden;
+    user-select: none;
 
     transition: all cubic-bezier(0.1, 0.49, 0.74, 0.96) 0.5s;
 
@@ -194,6 +261,7 @@ onMounted(() => {
     }
     &.mid {
       z-index: 4;
+      cursor: pointer;
     }
     &.right {
       transform: translateX(35%) scale(80%);
@@ -202,6 +270,23 @@ onMounted(() => {
       transform: scale(80%);
       z-index: -1;
       opacity: 0;
+    }
+  }
+
+  .pointBar {
+    position: absolute;
+    bottom: 2%;
+    .point {
+      display: inline-block;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.49);
+      margin-right: 10px;
+
+      &.pointChoosen {
+        background-color: rgba(255, 0, 0, 0.716);
+      }
     }
   }
 }
