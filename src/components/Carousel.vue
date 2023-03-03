@@ -31,12 +31,11 @@ const cards = ref<Icard[]>([
   },
 ]);
 // 方法
+// 点击卡片
 function clickHandler(index: number): void {
   // 点击的卡片
   const card = cards.value[index];
   const len = cards.value.length;
-
-  console.log(card.state);
 
   //   判断点击
 
@@ -86,6 +85,18 @@ function clickHandler(index: number): void {
     card4.state = "right";
   }
 }
+
+// 单次播放
+function play() {
+  // 当前的right
+  let rightIndex: number = 1;
+  cards.value.forEach((card, index) => {
+    if (card.state === "right") rightIndex = index;
+  });
+  clickHandler(rightIndex);
+}
+// 自动轮播
+setInterval(play, 3000);
 </script>
 
 <template>
