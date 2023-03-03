@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import component from "./components/CardMatch.vue";
+import component from "./components/Carousel.vue";
 </script>
 
 <template>

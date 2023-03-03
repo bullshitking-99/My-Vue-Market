@@ -12,6 +12,7 @@
     "highlight.js": "^11.7.0",
     "lodash-es": "^4.17.21",
     "marked": "^4.2.4",
+    "unplugin-auto-import": "^0.15.0",
     "vue": "^3.2.25",
     "vue-router": "^4.0.16",
     "vue3-img-viewer": "^0.0.5"
