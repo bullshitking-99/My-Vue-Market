@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { reactive, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 
 // 数据
 interface Icard {
@@ -86,6 +86,8 @@ function clickHandler(index: number): void {
   }
 }
 
+// 自动轮播
+
 // 单次播放
 function play() {
   // 当前的right
@@ -96,11 +98,24 @@ function play() {
   clickHandler(rightIndex);
 }
 // 自动轮播
-setInterval(play, 3000);
+let timeId = setInterval(play, 3000);
+
+// 鼠标hover时取消轮播
+// 声明一个 ref 来存放该元素的引用
+// 必须和模板里的 ref 同名
+const container = ref<HTMLDivElement | null>(null);
+onMounted(() => {
+  (container.value as HTMLDivElement).onmouseenter = () => {
+    clearInterval(timeId);
+  };
+  (container.value as HTMLDivElement).onmouseleave = () => {
+    timeId = setInterval(play, 3000);
+  };
+});
 </script>
 
 <template>
-  <div class="container">
+  <div ref="container" class="container">
     <img
       class="card"
       v-for="(card, index) in cards"
