@@ -142,6 +142,43 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
 
+  &:hover {
+    &::before {
+      box-sizing: border-box;
+      content: "<";
+      width: 1.4rem;
+      height: 1.4rem;
+      background-color: rgba(0, 0, 0, 0.154);
+      color: rgba(255, 255, 255, 0.575);
+      border-radius: 50%;
+      font-size: 1.2rem;
+      line-height: 1.3rem;
+      padding-left: 0.2rem;
+      z-index: 999;
+      display: inline-block;
+      position: absolute;
+      left: 7%;
+      transition: all ease 0.2s;
+    }
+    &::after {
+      box-sizing: border-box;
+      content: ">";
+      width: 1.4rem;
+      height: 1.4rem;
+      background-color: rgba(0, 0, 0, 0.154);
+      color: rgba(255, 255, 255, 0.575);
+      border-radius: 50%;
+      font-size: 1.2rem;
+      line-height: 1.3rem;
+      padding-left: 0.3rem;
+      z-index: 999;
+      display: inline-block;
+      position: absolute;
+      right: 7%;
+      transition: all ease 0.2s;
+    }
+  }
+
   .card {
     position: absolute;
     width: 60%;
@@ -150,7 +187,7 @@ onMounted(() => {
     object-fit: cover;
     overflow: hidden;
 
-    transition: all cubic-bezier(0.1, 0.49, 0.74, 0.96) 0.3s;
+    transition: all cubic-bezier(0.1, 0.49, 0.74, 0.96) 0.5s;
 
     &.left {
       transform: translateX(-35%) scale(80%);
@@ -164,6 +201,7 @@ onMounted(() => {
     &.back {
       transform: scale(80%);
       z-index: -1;
+      opacity: 0;
     }
   }
 }
